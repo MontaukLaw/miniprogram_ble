@@ -10,16 +10,17 @@
 <button bindtap="openBluetoothAdapter">开始扫描我们的蓝牙设备</button>
 <!-- <button bindtap="stopBluetoothDevicesDiscovery">停止扫描</button> -->
 <!-- <button bindtap="closeBluetoothAdapter">结束流程</button> -->
-
 <view class="devices_summary">已发现 {{devices.length}} 个外围设备：</view>
 <!-- 下面是个scroll视图, 用于展示搜索到的所有蓝牙设备 -->
 <scroll-view class="device_list" scroll-y scroll-with-animation>
-    <!-- 按下之后, 执行 createBLEConnection-->
+    <!-- 按下之后, 执行 createBLEConnection -->
     <view wx:for="{{devices}}" wx:key="index" data-device-id="{{item.deviceId}}" data-name="{{item.name || item.localName}}" bindtap="createBLEConnection" class="device_item" hover-class="device_item_hover">
-        <!-- 第1行显示蓝牙设备名称  -->
+        <!-- 第1行显示蓝牙设备名称 -->
         <view style="font-size: 16px; color: #333;">{{item.name}}</view>
         <!-- 第2行显示信号强度 -->
-        <view style="font-size: 10px">信号强度: {{item.RSSI}}dBm ({{utils.max(0, item.RSSI + 100)}}%)</view>
+        <view style="font-size: 10px">
+            信号强度: {{item.RSSI}}dBm ({{utils.max(0, item.RSSI + 100)}}%)
+        </view>
         <!-- 第3行显示UUID -->
         <!-- <view style="font-size: 10px">UUID: {{item.deviceId}}</view> -->
         <!-- 显示服务数量 -->
@@ -30,14 +31,16 @@
 <!-- <view style="width:100vw;height:400px" wx:if="{{points.length>0}}">
   <heatMap points="{{points}}" longitude="{{longitude}}" latitude="{{latitude}}" mapScale="{{mapScale}}" range="{{range}}"></heatMap>
 </view> -->
-
 <canvas id="myCanvas" type="2d" style="width: 100vw; height: 400px;" />
-
+<!-- <div id="heatmap" style="width: 600px; height: 400px;"></div> -->
+<!-- <view id="heatmap" style="width: 300px; height: 300px;"></view> -->
 <view class="connected_info" wx:if="{{connected}}">
     <view>
         <text>已连接到 {{name}}</text>
         <view class="operation">
-            <!-- <button wx:if="{{canWrite}}" size="mini" bindtap="writeBLECharacteristicValueForInit">写数据</button> -->
+            <button wx:if="{{canWrite}}" size="mini" bindtap="writeBLECharacteristicValueForInit">
+                初始化
+            </button>
             <!-- <button size="mini" bindtap="closeBLEConnection">断开连接</button> -->
         </view>
     </view>

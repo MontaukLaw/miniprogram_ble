@@ -1,4 +1,6 @@
 const app = getApp()
+// var heatMapLib = require('../utils/heatmap.js');
+// var util = require('../utils/test.js');
 
 const BYTES_PER_MSG = 250;
 
@@ -65,6 +67,7 @@ function DataParser() {
     this.lastSec = this.startTime
     this.ble_data_buff = [];
     this.ble_data_buff_str = "";
+    this.biggestS0 = 0
 }
 
 const dataParser = new DataParser();  // 创建一个新的 DataReceiver 实例
@@ -105,7 +108,6 @@ DataParser.prototype.timeCounter = function () {
 
 DataParser.prototype.getSensorData = function (solidMsg) {
 
-
     if (solidMsg.length > BYTES_PER_MSG) {
         // console.log("solid msg too big " + solidMsg + " len: " + solidMsg.length)
         return null;
@@ -128,7 +130,7 @@ DataParser.prototype.getSensorData = function (solidMsg) {
         return null;
     }
 
-    let sensorDataList = []
+    let sensorDataL = []
     // 分割字符串为列表，以逗号和空格分隔
     let sensorData = solidMsg.split(/, /);
     // console.log(sensorData)
@@ -139,10 +141,15 @@ DataParser.prototype.getSensorData = function (solidMsg) {
     for (let i = 0; i < sensorData.length; i++) {
         let data = sensorData[i].split(":")
         // sensorDataDict[data[0]] = data[1]
-        sensorDataList.push(data[1])
+        sensorDataL.push(data[1])
     }
-    return sensorDataList
 
+    if (this.biggestS0 < sensorDataL[0]) {
+        console.log(sensorDataL[0])
+        this.biggestS0 = sensorDataL[0]
+    }
+    ifStartLog = true
+    return sensorDataL
     // console.log(sensorDataList)
 
 }
@@ -234,19 +241,105 @@ DataParser.prototype.parseData = function (new_data) {
 
 var diameters = [50, 60, 70, 20, 40, 50, 60, 20, 30, 20, 20, 40, 30, 40, 50, 33];
 var sensorDataList = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-let diametersK = 0.5
-function changeD(){
+let diametersK = 0.2
+var ifStartLog = false
+
+class MyColor {
+    // 构造函数，用于初始化对象
+    constructor(r, b, g) {
+        this.r = r;
+        this.b = b;
+        this.g = g;
+    }
+}
+
+function changeD() {
     let pointNumber = 16
-    // console.log(sensorDataList)
+    let normalDia = 20
     for (let i = 0; i < pointNumber; i++) {
         // diameters[i] = diameters[i] + 1
         // if (diameters[i] > 30) {
         //     diameters[i] = 1
         // }
-        diameters[i] = sensorDataList[i] * diametersK
+        // console.log(sensorDataList[i])
+        diameters[i] = normalDia + sensorDataList[i] * diametersK
+        // console.log(diameters[i])
     }
+    return sensorDataList
 }
 
+
+function getColorRGB(dataList, dataIdx, alpha) {
+    let steps = 250
+    // console.log(sensorIdx)
+    // 以1000为准
+    if (dataList[dataIdx] > 1000) {
+        dataList[dataIdx] = 1000
+    }
+    // 'rgb(200, 0, 0)'
+
+    var sensorVal = Math.floor(dataList[dataIdx])
+    // console.log(sensorVal)
+    var r = 0
+    var b = 0
+    var g = 0
+    // 从蓝到青
+    if (sensorVal < steps) {
+        r = 0
+        g = sensorVal
+        b = steps
+        // 青到绿色
+    } else if (sensorVal >= steps && sensorVal < steps * 2) {
+        r = 0
+        g = steps
+        b = steps * 2 - sensorVal
+        // 绿色到黄
+    } else if (sensorVal >= steps * 2 && sensorVal < steps * 3) {
+        r = sensorVal - steps * 2
+        g = steps
+        b = 0
+    } else if (sensorVal >= steps * 3) {
+        r = steps
+        g = steps * 3 - sensorVal
+        b = 0
+    }
+    if (ifStartLog) {
+        // console.log("r: " + r + " g: " + g + " b: " + b)
+    }
+    // let color = getColorRGB(dataList, dataIdx)
+    if (alpha === 1) {
+        return getDynamicColorRGB(r, g, b)
+    } else {
+        return getDynamicColorRGBA(r, g, b, alpha)
+    }
+    // return getDynamicColor(color.r, color.g, color.b, alpha)
+    // return 'rgb(0, 250, 0)'
+}
+
+function getDynamicColorRGB(r, g, b) {
+    return `rgb(${r}, ${g}, ${b}`;
+}
+
+function getDynamicColorRGBA(r, g, b, a) {
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
+
+function getRandomColor() {
+    let r = Math.floor(Math.random() * 256);
+    let g = Math.floor(Math.random() * 256);
+    let b = Math.floor(Math.random() * 256);
+    let a = Math.random();
+    return getDynamicColor(r, g, b, a);
+}
+
+function drawImageWithPosition(ctx, image, x, y, idx) {
+
+    let imageSize = diameters[idx]
+    ctx.drawImage(image, x, y, imageSize, imageSize)
+}
+
+// function drawCanvas(res) {
+// }
 function drawCanvas(res) {
     // Canvas 对象
     const canvas = res[0].node
@@ -272,11 +365,24 @@ function drawCanvas(res) {
     // 乘以2是两边都有
     const circle_center_gap = Math.floor((canvas.width / dpr - margin_left_right * 2) / gap_x_number)
     console.info(circle_center_gap)
+
+    const blueImage = canvas.createImage()
+    blueImage.src = '../resource/blue_circle.png'
+
+    const yellowImage = canvas.createImage()
+    yellowImage.src = '../resource/yellow_circle.png'
+
+    const redImage = canvas.createImage()
+    redImage.src = '../resource/red_circle.png'
+
+    const greenImage = canvas.createImage()
+    greenImage.src = '../resource/green_circle.png'
+
     const draw = () => {
         // console.log("draw")
-        changeD()
+        sDataList = changeD()
         let point_number = 16
-        ctx.fillStyle = 'rgb(200, 0, 0)';
+        // ctx.fillStyle = 'rgb(200, 0, 0)';
         // 定义每个圆的直径（顺序按从左到右，从上到下）
         // const diameters = [50, 60, 70, 80, 40, 50, 60, 70, 90, 100, 110, 120, 30, 40, 50, 60];
         const k = 2
@@ -287,22 +393,40 @@ function drawCanvas(res) {
         const gapY = circle_center_gap; // 行间距
 
         // const gapY = 100; // 行间距
-
         // 先全部清理一遍
         ctx.clearRect(0, 0, screenWidth, screenHeight)
-        // 绘制16个圆
+        // ctx.fillStyle = 'rgb(0, 0, 50)';
+        // ctx.fillRect(0, 0, screenWidth, screenHeight);
+
+        // 绘制16个图片
         for (let i = 0; i < 4; i++) {
             for (let j = 0; j < 4; j++) {
-                const index = i * 4 + j; // 当前圆的索引
-                const radius = diameters[index]; // 计算半径
+                const index = i * 4 + j;
                 const x = startX + j * gapX; // 当前列的圆心X坐标
                 const y = startY + i * gapY; // 当前行的圆心Y坐标
 
-                ctx.beginPath();
-                ctx.arc(x, y, radius, 0, 2 * Math.PI);
-                ctx.fill();
+                drawImageWithPosition(ctx, blueImage, x, y, index)
             }
         }
+        // ctx.drawImage(image, 0, 0, 100, 100)
+
+        // 绘制16个圆
+        // for (let i = 0; i < 4; i++) {
+        //     for (let j = 0; j < 4; j++) {
+        //         const index = i * 4 + j; // 当前圆的索引
+        //         const radius = diameters[index]; // 计算半径
+
+        //         const x = startX + j * gapX; // 当前列的圆心X坐标
+        //         const y = startY + i * gapY; // 当前行的圆心Y坐标
+        //         // rgbColor = getColor(sDataList, index);
+        //         ctx.fillStyle = getColorRGB(sDataList, index, 0.3); // 'rgba(0, 0, 0, 0.8)';
+        //         ctx.shadowBlur = 30;
+        //         ctx.shadowColor = getColorRGB(sDataList, index, 1); // getColor(sDataList, index); // (0, 0, 50, 'blue')
+        //         ctx.beginPath();
+        //         ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        //         ctx.fill();
+        //     }
+        // }
         // 注册下一帧渲染
         canvas.requestAnimationFrame(draw)
     }
@@ -361,15 +485,41 @@ Page({
     },
     onLoad() {
         this.createSelectorQuery()
+            // .select('#heatmap')
             .select('#myCanvas')
             .fields({
                 node: true,
                 size: true
-            })
-            .exec(res => {
+            }).exec(res => {
+                // console.log(res)
+                // var heatmapInstance = heatMapLib.create({
+                //     // only container is required, the rest will be defaults
+                //     // container: document.getElementById('heatmap'),
+                //     container: res[0],
+                //     maxOpacity: .5,
+                //     radius: 50,
+                //     blur: .75
+                // });
+                // typeof res
+                // console.log(res[0].node)
+                // console.log("hello")
                 drawCanvas(res)
                 // draw()
             })
+
+        // this.querySelector('#heatmap'),
+        // const query = this.createSelectorQuery();
+        // let hm =query.select('#myCanvas');
+        // var heatmapInstance = heatMapLib.create({
+        //     // only container is required, the rest will be defaults
+        //     // container: document.getElementById('heatmap'),
+        //     container: hm,
+        //     maxOpacity: .5,
+        //     radius: 50,
+        //     blur: .75
+        // });
+
+        // util.count("hello world")
     },
     openBluetoothAdapter() {
         wx.openBluetoothAdapter({
@@ -559,8 +709,8 @@ Page({
                     value: ab2hex(characteristic.value)
                     // value: ab2hex(characteristic.value)
                 }
-                // 对数据做处理
 
+                // 对数据做处理
                 sensorData = dataParser.parseData(characteristic.value)
                 if (sensorData) {
                     // console.log(sensorData)
