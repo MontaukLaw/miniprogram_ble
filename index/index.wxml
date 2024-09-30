@@ -1,51 +1,57 @@
 <wxs module="utils">
-    module.exports.max = function (n1, n2) {
-        return Math.max(n1, n2)
-    }
-    module.exports.len = function (arr) {
-        arr = arr || []
-        return arr.length
-    }
+  module.exports.max = function (n1, n2) {
+    return Math.max(n1, n2)
+  }
+  module.exports.len = function (arr) {
+    arr = arr || []
+    return arr.length
+  }
 </wxs>
-<button bindtap="openBluetoothAdapter">开始扫描我们的蓝牙设备</button>
+<!-- <button bindtap="openBluetoothAdapter">开始扫描我们的蓝牙设备</button> -->
 <!-- <button bindtap="stopBluetoothDevicesDiscovery">停止扫描</button> -->
 <!-- <button bindtap="closeBluetoothAdapter">结束流程</button> -->
-<view class="devices_summary">已发现 {{devices.length}} 个外围设备：</view>
+<view class="devices_summary" wx:if="{{!connected}}">发现 {{devices.length}} 个我们的设备：</view>
 <!-- 下面是个scroll视图, 用于展示搜索到的所有蓝牙设备 -->
-<scroll-view class="device_list" scroll-y scroll-with-animation>
-    <!-- 按下之后, 执行 createBLEConnection -->
-    <view wx:for="{{devices}}" wx:key="index" data-device-id="{{item.deviceId}}" data-name="{{item.name || item.localName}}" bindtap="createBLEConnection" class="device_item" hover-class="device_item_hover">
-        <!-- 第1行显示蓝牙设备名称 -->
-        <view style="font-size: 16px; color: #333;">{{item.name}}</view>
-        <!-- 第2行显示信号强度 -->
-        <view style="font-size: 10px">
-            信号强度: {{item.RSSI}}dBm ({{utils.max(0, item.RSSI + 100)}}%)
-        </view>
-        <!-- 第3行显示UUID -->
-        <!-- <view style="font-size: 10px">UUID: {{item.deviceId}}</view> -->
-        <!-- 显示服务数量 -->
-        <!-- <view style="font-size: 10px">Service数量: {{utils.len(item.advertisServiceUUIDs)}}</view> -->
-    </view>
+<scroll-view wx:if="{{!connected}}" class="device_list" scroll-y scroll-with-animation>
+  <!-- 按下之后, 执行 createBLEConnection -->
+  <view wx:for="{{devices}}" wx:key="index" data-device-id="{{item.deviceId}}" data-name="{{item.name || item.localName}}" bindtap="createBLEConnection" class="device_item" hover-class="device_item_hover">
+    <!-- 第1行显示蓝牙设备名称 -->
+    <view style="font-size: 16px; color: #333;">{{item.name}}</view>
+    <!-- 第2行显示信号强度 -->
+    <view style="font-size: 10px">信号强度: {{item.RSSI}}dBm ({{utils.max(0, item.RSSI + 100)}}%)</view>
+    <!-- 第3行显示UUID -->
+    <!-- <view style="font-size: 10px">UUID: {{item.deviceId}}</view> -->
+    <!-- 显示服务数量 -->
+    <!-- <view style="font-size: 10px">Service数量: {{utils.len(item.advertisServiceUUIDs)}}</view> -->
+  </view>
 </scroll-view>
 <!-- <heatMap>组件父节点必须定义宽高，<heatMap>组件将填充满父节点 -->
 <!-- <view style="width:100vw;height:400px" wx:if="{{points.length>0}}">
   <heatMap points="{{points}}" longitude="{{longitude}}" latitude="{{latitude}}" mapScale="{{mapScale}}" range="{{range}}"></heatMap>
 </view> -->
+<radio-group class="radio-group" bindchange="onDrawTypeRadioChange" wx:if="{{connected}}">
+  <radio class="radio" wx:for-items="{{drawType}}" wx:key="name" value="{{item.name}}" checked="{{item.checked}}">
+    <text>{{item.value}}</text>
+  </radio>
+</radio-group>
+
 <canvas id="myCanvas" type="2d" style="width: 100vw; height: 400px;" />
 <!-- <div id="heatmap" style="width: 600px; height: 400px;"></div> -->
 <!-- <view id="heatmap" style="width: 300px; height: 300px;"></view> -->
 <view class="connected_info" wx:if="{{connected}}">
-    <view>
-        <text>已连接到 {{name}}</text>
-        <view class="operation">
-            <button wx:if="{{canWrite}}" size="mini" bindtap="writeBLECharacteristicValueForInit">
-                初始化
-            </button>
-            <!-- <button size="mini" bindtap="closeBLEConnection">断开连接</button> -->
-        </view>
+  <view>
+    <text>已连接到 {{name}}</text>
+    <view class="operation">
+      <button wx:if="{{canWrite}}" size="mini" bindtap="writeBLECharacteristicValueForInit">
+        初始化
+      </button>
+      <!-- <button size="mini" bindtap="closeBLEConnection">断开连接</button> -->
     </view>
-    <view wx:for="{{chs}}" wx:key="index" style="font-size: 12px; margin-top: 10px;">
-        <view>特性UUID: {{item.uuid}}</view>
-        <view>特性值: {{item.value}}</view>
-    </view>
+  </view>
+  <view wx:for="{{chs}}" wx:key="index" style="font-size: 12px; margin-top: 10px;">
+    <view>特性UUID: {{item.uuid}}</view>
+    <view>特性值: {{item.value}}</view>
+  </view>
+  <view>{{log_l1}}</view>
+  <view>{{log_l2}}</view>
 </view>

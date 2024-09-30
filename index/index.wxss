@@ -5,23 +5,43 @@ page {
 .devices_summary {
     /* margin-top: 30px; */
     padding: 5px;
-    font-size: 16px;
+    font-size: 20px;
+}
+
+.tab-bar {
+    pointer-events: auto;
+    position: absolute;
+}
+
+.radio-group {
+    margin: 5px 5px;
+    border: 1px solid #EEE;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: row;
+    padding: 5px
+}
+
+.radio {
+    display: flex;
+    padding: 5px;
 }
 
 /* 扫描到的设备列表视图的类 */
 .device_list {
-    height: 80px;
+    /* height: 80px; */
     margin: 5px 5px;
     margin-top: 0;
     border: 1px solid #EEE;
     border-radius: 5px;
     width: auto;
+    height: auto;
 }
 
 .device_item {
     border-bottom: 1px solid #EEE;
     padding: 10px;
-    color: #666; 
+    color: #666;
 }
 
 .device_item_hover {
