@@ -34,7 +34,6 @@
     <text>{{item.value}}</text>
   </radio>
 </radio-group>
-
 <canvas id="myCanvas" type="2d" style="width: 100vw; height: 400px;" />
 <!-- <div id="heatmap" style="width: 600px; height: 400px;"></div> -->
 <!-- <view id="heatmap" style="width: 300px; height: 300px;"></view> -->
@@ -53,5 +52,5 @@
     <view>特性值: {{item.value}}</view>
   </view>
   <view>{{log_l1}}</view>
-  <view>{{log_l2}}</view>
+  <!-- <view>{{log_l2}}</view> -->
 </view>
