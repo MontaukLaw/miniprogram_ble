@@ -18,7 +18,6 @@ function inArray(arr, key, val) {
     return -1;
 }
 
-
 function ab2ascii(buffer) {
     let asciiStr = '';
     let view = new Uint8Array(buffer);
@@ -159,6 +158,117 @@ function getColorByTemp(tempVal) {
         g = 255 - Math.floor((255 - 0) * (tempVal - 165) / 135)
         b = 0
     }
+
+    return getDynamicColorRGB(r, g, b)
+}
+
+// 0-15 16个颜色
+function getColorByIdx(idx) {
+
+    let r = 0
+    let g = 0
+    let b = 0
+
+    switch (idx) {
+        case 0:
+            r = 0
+            g = 0
+            b = 0
+            break
+
+        case 1:
+            r = 128
+            g = 0
+            b = 0
+            break
+
+        case 2:
+            r = 255
+            g = 0
+            b = 0
+            break
+
+        case 3:
+            r = 255
+            g = 128
+            b = 0
+            break
+
+        case 4:
+            r = 255
+            g = 255
+            b = 0
+            break
+
+        case 5:
+            r = 128
+            g = 255
+            b = 0
+            break
+
+
+        case 6:
+            r = 0
+            g = 255
+            b = 0
+            break
+
+        case 7:
+            r = 0
+            g = 255
+            b = 128
+            break
+
+        case 8:
+            r = 0
+            g = 255
+            b = 255
+            break
+
+        case 9:
+            r = 0
+            g = 128
+            b = 255
+            break
+
+        case 10:
+            r = 0
+            g = 0
+            b = 255
+            break
+
+        case 11:
+            r = 128
+            g = 0
+            b = 255
+            break
+
+        case 12:
+            r = 255
+            g = 0
+            b = 255
+            break
+
+        case 13:
+            r = 255
+            g = 0
+            b = 128
+            break
+
+        case 14:
+            r = 255
+            g = 0
+            b = 0
+            break
+
+        case 15:
+            r = 128
+            g = 128
+            b = 128
+            break
+
+    }
+
 
     return getDynamicColorRGB(r, g, b)
 }
@@ -334,7 +444,6 @@ function drawCanvas16CH(res) {
 
 }
 
-
 module.exports = {
     ab2hex: ab2hex,
     inArray: inArray,
@@ -352,5 +461,6 @@ module.exports = {
     getMaxBLEMTU: getMaxBLEMTU,
     parseCharValue: parseCharValue,
     changeCircleRad: changeCircleRad,
-    drawCanvas16CH: drawCanvas16CH
+    drawCanvas16CH: drawCanvas16CH,
+    getColorByIdx: getColorByIdx
 }
